@@ -1,56 +1,112 @@
-const path = require('path')
 const Products = require('./products')
-const autoCatch = require('./lib/auto-catch')
+const Orders = require('./orders')
 
-function handleRoot(req, res) {
-  res.sendFile(path.join(__dirname, 'index.html'))
-}
-
-async function listProducts(req, res) {
+/**
+ * List products
+ */
+async function listProducts(req, res, next) {
   const { offset = 0, limit = 25, tag } = req.query
 
-  const result = await Products.list({
+  const products = await Products.list({
     offset: Number(offset),
     limit: Number(limit),
     tag
   })
 
-  res.json(result)
+  res.json(products)
 }
 
+/**
+ * Get one product
+ */
 async function getProduct(req, res, next) {
-  const { id } = req.params
-  const product = await Products.get(id)
-
-  if (!product) {
-    return next()
-  }
-
+  const product = await Products.get(req.params.id)
   res.json(product)
 }
 
-async function createProduct(req, res) {
-  const newProduct = await Products.create(req.body)
-  res.status(201).json(newProduct)
+/**
+ * Create a new product
+ */
+async function createProduct(req, res, next) {
+  const product = await Products.create(req.body)
+  res.json(product)
 }
 
-async function updateProduct(req, res) {
-  const { id } = req.params
-  const updated = await Products.update(id, req.body)
-  res.status(200).json(updated)
+/**
+ * Update a product
+ */
+async function editProduct(req, res, next) {
+  const change = req.body
+  const product = await Products.edit(req.params.id, change)
+  res.json(product)
 }
 
-async function deleteProduct(req, res) {
-  const { id } = req.params
-  const result = await Products.remove(id)
-  res.status(202).json(result)
+/**
+ * Delete a product
+ */
+async function deleteProduct(req, res, next) {
+  const response = await Products.destroy(req.params.id)
+  res.json(response)
 }
 
-module.exports = autoCatch({
-  handleRoot,
+/**
+ * Create an order
+ */
+async function createOrder(req, res, next) {
+  const order = await Orders.create(req.body)
+  res.json(order)
+}
+
+/**
+ * List orders
+ */
+async function listOrders(req, res, next) {
+  const { offset = 0, limit = 25, productId, status } = req.query
+
+  const orders = await Orders.list({
+    offset: Number(offset),
+    limit: Number(limit),
+    productId,
+    status
+  })
+
+  res.json(orders)
+}
+
+/**
+ * Get one order
+ */
+async function getOrder(req, res, next) {
+  const order = await Orders.get(req.params.id)
+  res.json(order)
+}
+
+/**
+ * Update an order
+ */
+async function editOrder(req, res, next) {
+  const change = req.body
+  const order = await Orders.edit(req.params.id, change)
+  res.json(order)
+}
+
+/**
+ * Delete an order
+ */
+async function deleteOrder(req, res, next) {
+  const response = await Orders.destroy(req.params.id)
+  res.json(response)
+}
+
+module.exports = {
   listProducts,
   getProduct,
   createProduct,
-  updateProduct,
-  deleteProduct
-})
+  editProduct,
+  deleteProduct,
+  listOrders,
+  getOrder,
+  createOrder,
+  editOrder,
+  deleteOrder
+}
